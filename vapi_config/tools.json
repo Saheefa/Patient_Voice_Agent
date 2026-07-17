@@ -1,0 +1,84 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "check_existing_patient",
+      "description": "Look up whether a patient already exists by phone number. Call this early in the call, right after getting the caller's phone number, before collecting the rest of their information.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "description": "The caller's 10-digit U.S. phone number."
+          }
+        },
+        "required": ["phone_number"]
+      }
+    },
+    "server": { "url": "https://YOUR_DEPLOYMENT_URL/vapi/webhook" }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "register_patient",
+      "description": "Save a new patient record after the caller has confirmed all collected information is correct. Only call this once, after readback confirmation.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "first_name": { "type": "string" },
+          "last_name": { "type": "string" },
+          "date_of_birth": { "type": "string", "description": "MM/DD/YYYY or YYYY-MM-DD" },
+          "sex": { "type": "string", "enum": ["Male", "Female", "Other", "Decline to Answer"] },
+          "phone_number": { "type": "string", "description": "10-digit U.S. phone number" },
+          "email": { "type": "string" },
+          "address_line_1": { "type": "string" },
+          "address_line_2": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string", "description": "2-letter U.S. state abbreviation" },
+          "zip_code": { "type": "string" },
+          "insurance_provider": { "type": "string" },
+          "insurance_member_id": { "type": "string" },
+          "preferred_language": { "type": "string" },
+          "emergency_contact_name": { "type": "string" },
+          "emergency_contact_phone": { "type": "string" }
+        },
+        "required": [
+          "first_name", "last_name", "date_of_birth", "sex",
+          "phone_number", "address_line_1", "city", "state", "zip_code"
+        ]
+      }
+    },
+    "server": { "url": "https://YOUR_DEPLOYMENT_URL/vapi/webhook" }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "update_patient",
+      "description": "Update an existing patient's record (used when check_existing_patient found a match and the caller wants to update rather than create a new record). Only include fields that changed.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "patient_id": { "type": "string", "description": "UUID returned by check_existing_patient" },
+          "first_name": { "type": "string" },
+          "last_name": { "type": "string" },
+          "date_of_birth": { "type": "string" },
+          "sex": { "type": "string", "enum": ["Male", "Female", "Other", "Decline to Answer"] },
+          "phone_number": { "type": "string" },
+          "email": { "type": "string" },
+          "address_line_1": { "type": "string" },
+          "address_line_2": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "zip_code": { "type": "string" },
+          "insurance_provider": { "type": "string" },
+          "insurance_member_id": { "type": "string" },
+          "preferred_language": { "type": "string" },
+          "emergency_contact_name": { "type": "string" },
+          "emergency_contact_phone": { "type": "string" }
+        },
+        "required": ["patient_id"]
+      }
+    },
+    "server": { "url": "https://YOUR_DEPLOYMENT_URL/vapi/webhook" }
+  }
+]

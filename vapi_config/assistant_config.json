@@ -1,0 +1,26 @@
+{
+  "name": "Patient Registration Agent",
+  "firstMessage": "Hi there, thanks for calling! This is Alex, the intake coordinator — are you calling to register as a new patient today?",
+  "model": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "temperature": 0.4,
+    "systemPromptFile": "system_prompt.md"
+  },
+  "voice": {
+    "provider": "11labs",
+    "voiceId": "REPLACE_WITH_CHOSEN_VOICE_ID"
+  },
+  "transcriber": {
+    "provider": "deepgram",
+    "model": "nova-2",
+    "language": "multi"
+  },
+  "tools": "see tools.json — import/attach these three functions in the Vapi dashboard",
+  "serverUrl": "https://YOUR_DEPLOYMENT_URL/vapi/webhook",
+  "endCallFunctionEnabled": true,
+  "recordingEnabled": true,
+  "silenceTimeoutSeconds": 20,
+  "maxDurationSeconds": 900,
+  "notes": "language set to 'multi' on the transcriber + explicit Spanish-switch instruction in the system prompt covers the bonus multi-language requirement. recordingEnabled + serverUrl end-of-call-report handler covers the bonus call transcript requirement (logged server-side)."
+}
