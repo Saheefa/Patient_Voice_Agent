@@ -124,6 +124,12 @@ conversationally — per the "don't rely solely on the voice agent" requirement.
   returns a structured error the LLM re-prompts around, and the same
   Pydantic models guard the REST API directly.
 
+## Live deployment
+
+- **Phone number**: +1 (725) 745-7126
+- **API base URL**: https://patient-voice-agent-one.vercel.app
+- **Repository**: https://github.com/Saheefa/Patient_Voice_Agent
+
 ## Known limitations & trade-offs
 
 - **Vercel + database persistence:** Vercel functions have an ephemeral,
@@ -133,6 +139,13 @@ conversationally — per the "don't rely solely on the voice agent" requirement.
   instance** (Vercel Postgres/Neon/Supabase free tiers all work). This is
   the one config step that can't be skipped for the live deployment to
   satisfy "Call 1 data survives to Call 2."
+- **Free-tier Postgres cold starts:** hosted free-tier Postgres (Neon)
+  pauses after a few minutes idle. The first database query after a pause
+  adds a noticeable delay (observed ~3s in testing) to that one
+  conversation turn — the caller may experience a longer-than-usual pause
+  right when a tool is called (e.g. checking for an existing patient). A
+  paid/always-on tier removes this; not addressed here to stay within the
+  free-tier trade-off the challenge encourages.
 - **No dashboard UI** — bonus item not built; `/docs` (FastAPI's
   auto-generated Swagger UI) is the closest thing to a browsable view
   today.
