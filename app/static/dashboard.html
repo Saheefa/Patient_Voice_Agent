@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Roster — Wellness Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF1EF;
+    --panel: #FBFCFB;
+    --ink: #1F2B26;
+    --ink-soft: #5B6B63;
+    --line: #D8DFDB;
+    --teal: #2F6F62;
+    --teal-deep: #234F45;
+    --gold: #B98B2E;
+    --danger: #A34433;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 48px 28px 80px; }
+
+  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 12px; }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); margin: 0 0 6px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 34px; margin: 0; color: var(--teal-deep); }
+  .meta { font-size: 13px; color: var(--ink-soft); font-family: 'IBM Plex Mono', monospace; }
+
+  .toolbar { display: flex; gap: 10px; margin: 28px 0 20px; flex-wrap: wrap; }
+  .toolbar input {
+    flex: 1; min-width: 200px;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .toolbar input:focus { outline: 2px solid var(--teal); outline-offset: -1px; }
+  .toolbar button {
+    padding: 11px 18px;
+    border: 1px solid var(--teal-deep);
+    background: var(--teal-deep);
+    color: white;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .toolbar button:hover { background: var(--teal); }
+  .toolbar button.ghost { background: transparent; color: var(--teal-deep); }
+  .toolbar button.ghost:hover { background: var(--panel); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 500;
+  }
+  tbody tr { border-bottom: 1px solid var(--line); cursor: pointer; transition: background 0.12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #F2F5F3; }
+  tbody td { padding: 14px 16px; font-size: 14px; vertical-align: middle; }
+  .name { font-weight: 600; color: var(--ink); }
+  .sub { color: var(--ink-soft); font-size: 12px; margin-top: 2px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--ink-soft); }
+  .pulse {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold); margin-right: 8px; position: relative; top: -1px;
+  }
+  .pulse.old { background: var(--line); }
+
+  .detail-row td { background: #F5F7F5; padding: 0; }
+  .detail-inner { padding: 18px 20px 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 24px; }
+  .field-label { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 3px; }
+  .field-value { font-size: 14px; color: var(--ink); }
+  .field-value.empty { color: var(--line); font-style: italic; }
+
+  .empty-state { padding: 64px 20px; text-align: center; color: var(--ink-soft); }
+  .empty-state h2 { font-family: 'Fraunces', serif; color: var(--teal-deep); font-weight: 500; font-size: 20px; margin-bottom: 8px; }
+  .loading { padding: 40px; text-align: center; color: var(--ink-soft); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .error-banner { background: #F7E9E6; border: 1px solid var(--danger); color: var(--danger); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
+
+  @media (max-width: 720px) {
+    thead { display: none; }
+    tbody td { display: block; padding: 6px 16px; }
+    tbody tr { padding: 10px 0; }
+    .detail-inner { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Intake · Wellness Partners</p>
+      <h1>Patient Roster</h1>
+    </div>
+    <p class="meta" id="countLabel">loading…</p>
+  </header>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="Search by last name…" />
+    <input type="text" id="phoneInput" placeholder="Search by phone…" />
+    <button onclick="loadPatients()">Search</button>
+    <button class="ghost" onclick="clearSearch()">Clear</button>
+  </div>
+
+  <div id="errorBanner"></div>
+  <div class="panel" id="panelRoot">
+    <div class="loading">Fetching patient records…</div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = window.location.origin;
+  let expandedId = null;
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function fmtPhone(p) {
+    if (!p || p.length !== 10) return p || '—';
+    return `(${p.slice(0,3)}) ${p.slice(3,6)}-${p.slice(6)}`;
+  }
+
+  function isRecent(iso) {
+    if (!iso) return false;
+    return (Date.now() - new Date(iso).getTime()) < 24 * 60 * 60 * 1000;
+  }
+
+  function field(label, value) {
+    const empty = value === null || value === undefined || value === '';
+    return `<div>
+      <p class="field-label">${label}</p>
+      <p class="field-value ${empty ? 'empty' : ''}">${empty ? 'not provided' : value}</p>
+    </div>`;
+  }
+
+  function renderDetail(p) {
+    return `<div class="detail-inner">
+      ${field('Date of birth', fmtDate(p.date_of_birth))}
+      ${field('Sex', p.sex)}
+      ${field('Email', p.email)}
+      ${field('Address', [p.address_line_1, p.address_line_2].filter(Boolean).join(', '))}
+      ${field('City / State / ZIP', `${p.city}, ${p.state} ${p.zip_code}`)}
+      ${field('Preferred language', p.preferred_language)}
+      ${field('Insurance provider', p.insurance_provider)}
+      ${field('Insurance member ID', p.insurance_member_id)}
+      ${field('Emergency contact', p.emergency_contact_name)}
+      ${field('Emergency contact phone', p.emergency_contact_phone ? fmtPhone(p.emergency_contact_phone) : null)}
+      ${field('Patient ID', p.patient_id)}
+      ${field('Registered', fmtDate(p.created_at))}
+    </div>`;
+  }
+
+  function renderTable(patients) {
+    const root = document.getElementById('panelRoot');
+    if (!patients.length) {
+      root.innerHTML = `<div class="empty-state">
+        <h2>No patients found</h2>
+        <p>Records created over the phone will appear here.</p>
+      </div>`;
+      return;
+    }
+
+    const rows = patients.map(p => {
+      const recent = isRecent(p.created_at);
+      const open = expandedId === p.patient_id;
+      let html = `<tr onclick="toggleDetail('${p.patient_id}')">
+        <td>
+          <span class="pulse ${recent ? '' : 'old'}"></span>
+          <span class="name">${p.first_name} ${p.last_name}</span>
+          <div class="sub">${fmtDate(p.date_of_birth)} · ${p.sex}</div>
+        </td>
+        <td class="mono">${fmtPhone(p.phone_number)}</td>
+        <td>${p.city}, ${p.state}</td>
+        <td class="mono">${fmtDate(p.created_at)}</td>
+      </tr>`;
+      if (open) {
+        html += `<tr class="detail-row"><td colspan="4">${renderDetail(p)}</td></tr>`;
+      }
+      return html;
+    }).join('');
+
+    root.innerHTML = `<table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Phone</th>
+          <th>Location</th>
+          <th>Registered</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  function toggleDetail(id) {
+    expandedId = expandedId === id ? null : id;
+    loadPatients(true);
+  }
+
+  let lastPatients = [];
+
+  async function loadPatients(skipFetch) {
+    const errorBanner = document.getElementById('errorBanner');
+    errorBanner.innerHTML = '';
+
+    if (skipFetch) {
+      renderTable(lastPatients);
+      return;
+    }
+
+    const lastName = document.getElementById('searchInput').value.trim();
+    const phone = document.getElementById('phoneInput').value.trim();
+    const params = new URLSearchParams();
+    if (lastName) params.set('last_name', lastName);
+    if (phone) params.set('phone_number', phone.replace(/\D/g, ''));
+
+    document.getElementById('panelRoot').innerHTML = '<div class="loading">Fetching patient records…</div>';
+
+    try {
+      const res = await fetch(`${API_BASE}/patients?${params.toString()}`);
+      const body = await res.json();
+      if (!res.ok || body.error) {
+        throw new Error(typeof body.error === 'string' ? body.error : 'Request failed');
+      }
+      lastPatients = body.data || [];
+      document.getElementById('countLabel').textContent =
+        `${lastPatients.length} patient${lastPatients.length === 1 ? '' : 's'}`;
+      renderTable(lastPatients);
+    } catch (err) {
+      document.getElementById('countLabel').textContent = '—';
+      errorBanner.innerHTML = `<div class="error-banner">Couldn't load patients: ${err.message}. The database may be waking up from idle — try again in a few seconds.</div>`;
+      document.getElementById('panelRoot').innerHTML = '';
+    }
+  }
+
+  function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('phoneInput').value = '';
+    loadPatients();
+  }
+
+  document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadPatients(); });
+  document.getElementById('phoneInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadPatients(); });
+
+  loadPatients();
+</script>
+</body>
+</html>

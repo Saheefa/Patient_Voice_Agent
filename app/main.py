@@ -1,7 +1,8 @@
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -46,3 +47,10 @@ def root():
 @app.get("/health")
 def health():
     return {"data": {"status": "healthy"}, "error": None}
+
+
+@app.get("/dashboard")
+def dashboard():
+    """Simple staff-facing UI listing registered patients (bonus)."""
+    path = Path(__file__).parent / "static" / "dashboard.html"
+    return FileResponse(path, media_type="text/html")

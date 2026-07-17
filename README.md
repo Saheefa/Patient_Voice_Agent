@@ -113,6 +113,11 @@ conversationally — per the "don't rely solely on the voice agent" requirement.
 - **Duplicate detection (bonus):** the agent calls `check_existing_patient`
   right after getting the phone number, before collecting anything else,
   and offers to update instead of create if a match is found.
+- **Dashboard (bonus):** `GET /dashboard` serves a lightweight staff-facing
+  patient roster — search by last name/phone, click a row to expand full
+  details, subtle indicator for records created in the last 24h. No build
+  step, no separate deploy; it's a static page served directly by the same
+  FastAPI app, calling the same `/patients` API.
 - **Multi-language (bonus):** the Deepgram transcriber is set to `multi`
   and the prompt explicitly instructs a full switch to Spanish on request.
 - **Call transcripts (bonus):** `recordingEnabled: true` plus the
@@ -146,9 +151,6 @@ conversationally — per the "don't rely solely on the voice agent" requirement.
   right when a tool is called (e.g. checking for an existing patient). A
   paid/always-on tier removes this; not addressed here to stay within the
   free-tier trade-off the challenge encourages.
-- **No dashboard UI** — bonus item not built; `/docs` (FastAPI's
-  auto-generated Swagger UI) is the closest thing to a browsable view
-  today.
 - **Call transcript is logged, not persisted to a `transcripts` table** —
   logged to stdout per the observability requirement; a `call_transcripts`
   table with a `patient_id` foreign key is the natural next step.
