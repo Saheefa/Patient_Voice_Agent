@@ -5,6 +5,44 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+# The voice agent may send a date of birth in several shapes depending on how
+# the caller says it and how the LLM formats it (e.g. "01/05/1990",
+# "1990-01-05", "January 5, 1990"). Pydantic's default date parser only
+# accepts ISO format, which silently rejected everything else — this list
+# covers the formats we've seen in practice, tried in order.
+_DATE_FORMATS = (
+    "%Y-%m-%d",
+    "%m/%d/%Y",
+    "%m-%d-%Y",
+    "%m/%d/%y",
+    "%B %d, %Y",
+    "%B %d %Y",
+    "%b %d, %Y",
+    "%b %d %Y",
+    "%d %B %Y",
+    "%d %b %Y",
+)
+
+
+def parse_flexible_date(v):
+    """Accepts a date object as-is; parses strings against several known
+    formats. Raises ValueError (caught by Pydantic and surfaced as a normal
+    422) if nothing matches."""
+    if isinstance(v, date):
+        return v
+    if isinstance(v, str):
+        s = v.strip()
+        for fmt in _DATE_FORMATS:
+            try:
+                return datetime.strptime(s, fmt).date()
+            except ValueError:
+                continue
+        raise ValueError(
+            f"date_of_birth {v!r} is not a recognized date format "
+            f"(expected e.g. YYYY-MM-DD or MM/DD/YYYY)"
+        )
+    raise ValueError("date_of_birth must be a date string")
+
 NAME_RE = re.compile(r"^[A-Za-z'\-\s]{1,50}$")
 VALID_SEX = {"Male", "Female", "Other", "Decline to Answer"}
 VALID_STATES = {
@@ -52,6 +90,11 @@ class PatientBase(BaseModel):
         if not NAME_RE.match(v):
             raise ValueError("names must be 1-50 alphabetic characters (hyphens/apostrophes allowed)")
         return v.strip()
+
+    @field_validator("date_of_birth", mode="before")
+    @classmethod
+    def parse_dob(cls, v):
+        return parse_flexible_date(v)
 
     @field_validator("date_of_birth")
     @classmethod
@@ -126,6 +169,13 @@ class PatientUpdate(BaseModel):
         if not NAME_RE.match(v):
             raise ValueError("names must be 1-50 alphabetic characters (hyphens/apostrophes allowed)")
         return v.strip()
+
+    @field_validator("date_of_birth", mode="before")
+    @classmethod
+    def parse_dob(cls, v):
+        if v is None:
+            return v
+        return parse_flexible_date(v)
 
     @field_validator("date_of_birth")
     @classmethod

@@ -43,6 +43,16 @@ def test_create_and_get_patient():
     assert get_resp.json()["data"]["first_name"] == "Test"
 
 
+def test_accepts_mm_dd_yyyy_date_of_birth():
+    """Regression test: the voice agent's tool schema allows MM/DD/YYYY,
+    which Pydantic's default date parser used to silently reject."""
+    p = unique_patient()
+    p["date_of_birth"] = "01/05/1990"
+    resp = client.post("/patients", json=p)
+    assert resp.status_code == 201
+    assert resp.json()["data"]["date_of_birth"] == "1990-01-05"
+
+
 def test_reject_future_date_of_birth():
     p = unique_patient()
     p["date_of_birth"] = "2999-01-01"
